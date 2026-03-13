@@ -1,0 +1,26 @@
+name: Project Evo - Continuous Autonomous Evolution
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Run every hour
+  workflow_dispatch:
+
+jobs:
+  evolution-cycle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Evo Swarm Bot
+        run: python swarm_bot.py --run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

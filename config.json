@@ -1,0 +1,15 @@
+{
+  "brain": {
+    "provider": "openai",
+    "model": "gpt-4o",
+    "base_url": "https://api.openai.com/v1"
+  },
+  "security": {
+    "mask_api_keys": true,
+    "log_level": "INFO"
+  },
+  "evolution_settings": {
+    "parallel_cycles": true,
+    "self_healing": true
+  }
+}

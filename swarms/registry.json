@@ -1,0 +1,22 @@
+{
+  "auditor": {
+    "role": "Identify security, performance, and stability risks.",
+    "task": "Analyze the codebase and flag failures in CI/CD, tests, or performance metrics.",
+    "output_format": "JSON problem report"
+  },
+  "architect": {
+    "role": "Design solutions to identified problems.",
+    "task": "Create code patches and refactoring plans.",
+    "output_format": "Code change set"
+  },
+  "coder": {
+    "role": "Execute and apply changes.",
+    "task": "Write and commit code patches based on Architect's plans.",
+    "output_format": "Git commit hash"
+  },
+  "tester": {
+    "role": "Verify the fix.",
+    "task": "Run TDD cycles and integration tests. Rollback if tests fail.",
+    "output_format": "Verification report"
+  }
+}

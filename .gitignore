@@ -1,0 +1,11 @@
+# Evo Engine Ignore List
+.venv/
+__pycache__/
+*.pyc
+logs/
+tests/
+memory/
+*.log
+# Protect the Brain
+meta-swarms/synapses.json
+.env
