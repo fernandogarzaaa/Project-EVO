@@ -6,7 +6,7 @@ from pathlib import Path
 from sdk.synaptic_matrix import SynapticMatrix
 
 class EvoMemory:
-    def __init__(self, storage_path="D:/project-evo/meta-swarms/memory.json"):
+    def __init__(self, storage_path="meta-swarms/memory.json"):
         self.storage_path = storage_path
         self.synapses = SynapticMatrix()
         if not os.path.exists(storage_path):

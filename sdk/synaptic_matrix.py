@@ -6,7 +6,7 @@ import uuid
 import threading
 
 class SynapticMatrix:
-    def __init__(self, path="D:/project-evo/meta-swarms/synapses.json"):
+    def __init__(self, path="meta-swarms/synapses.json"):
         self.path = path
         self.matrix = self._load()
         # Unique ID for this specific organism instance

@@ -14,9 +14,9 @@ def build_evo():
         "pyinstaller",
         "--onefile",
         "--name", "evo",
-        "D:/project-evo/cli/evo_cli.py",
-        "--add-data", "D:/project-evo/swarms/registry.json;swarms/",
-        "--add-data", "D:/project-evo/sdk/llm_client.py;sdk/",
+        "cli/evo_cli.py",
+        "--add-data", "swarms/registry.json;swarms/",
+        "--add-data", "sdk/llm_client.py;sdk/",
         "--clean"
     ]
     

@@ -3,8 +3,8 @@ import os
 
 # Status Dashboard Agent: Visualizes the brain
 def generate_status():
-    memory_path = "D:/project-evo/meta-swarms/memory.json"
-    synapse_path = "D:/project-evo/meta-swarms/synapses.json"
+    memory_path = "meta-swarms/memory.json"
+    synapse_path = "meta-swarms/synapses.json"
     
     with open(memory_path, "r") as f:
         mem = json.load(f)

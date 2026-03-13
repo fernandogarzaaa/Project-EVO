@@ -10,7 +10,7 @@ except ImportError:
     evo_core = None # Fallback to standard Python subprocess
 
 class SwarmOrchestrator:
-    def __init__(self, registry_path="D:/project-evo/swarms/registry.json"):
+    def __init__(self, registry_path="swarms/registry.json"):
         with open(registry_path, "r") as f:
             self.registry = json.load(f)
         self.logger = logging.getLogger("EvoOrchestrator")
@@ -26,7 +26,7 @@ class SwarmOrchestrator:
             return evo_core.invoke_swarm_agent(agent_role, task)
             
         process = await asyncio.create_subprocess_exec(
-            "python", f"D:/project-evo/swarms/agents/{agent_role}.py", "--task", task,
+            "python", f"swarms/agents/{agent_role}.py", "--task", task,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
@@ -85,4 +85,4 @@ class SwarmOrchestrator:
 
 if __name__ == "__main__":
     orchestrator = SwarmOrchestrator()
-    asyncio.run(orchestrator.run_parallel_evolution("D:/project-evo"))
+    asyncio.run(orchestrator.run_parallel_evolution("."))

@@ -4,7 +4,7 @@ use std::process::Command;
 #[pyfunction]
 fn invoke_swarm_agent(agent: String, task: String) -> PyResult<String> {
     let output = Command::new("python")
-        .arg(format!("D:/project-evo/swarms/agents/{}.py", agent))
+        .arg(format!("swarms/agents/{}.py", agent))
         .arg("--task")
         .arg(task)
         .output()
