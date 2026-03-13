@@ -21,6 +21,11 @@ def apply_fix_and_create_pr(patch_plan):
         new_branch = repo.create_head(branch_name)
         new_branch.checkout()
 
+        # Configure git identity for Actions runner
+        with repo.config_writer() as cw:
+            cw.set_value("user", "name", "Project Evo Agent")
+            cw.set_value("user", "email", "evo-agent@project-evo.ai")
+
         # Simulate applying change (in production, an LLM parses the patch into exact files)
         with open("math_engine.py", "w") as f:
             f.write("""def add(a, b):
