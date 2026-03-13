@@ -24,6 +24,7 @@ class SwarmOrchestrator:
         logging.basicConfig(level=logging.INFO)
         self.memory = EvoMemory()
         self.retriever = ContextRetriever()
+        self.excluded_issues = []
 
     async def deploy_agent(self, agent_role, task):
         self.logger.info(f"Deploying {agent_role} to address: {task[:50]}...")
@@ -33,11 +34,13 @@ class SwarmOrchestrator:
             return evo_core.invoke_swarm_agent(agent_role, task)
             
         agent_script = os.path.join(BASE_DIR, "swarms", "agents", f"{agent_role}.py")
+        venv_python = os.path.join(BASE_DIR, ".venv", "Scripts", "python.exe")
+        
         process = await asyncio.create_subprocess_exec(
-            sys.executable, agent_script, "--task", task,
+            venv_python, agent_script, "--task", task,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            cwd=os.getcwd()  # Execute in the target repo's working directory
+            cwd=os.getcwd()
         )
         stdout, stderr = await process.communicate()
         # Log stderr if it crashed
@@ -62,56 +65,65 @@ class SwarmOrchestrator:
         self.logger.info("Starting Parallel Evolution Cycle on: " + repo_path)
         
         # 1. Audit (Parallelize with context gathering)
-        repo_context = self.retriever.get_repo_map()
-        auditor_task = asyncio.create_task(self.deploy_agent("auditor", repo_context))
-        issues = await auditor_task
-        
-        if "ISSUE_FOUND" in issues:
-            # --- THE ANTI-LOOP CHECK ---
-            if self._is_looping(issues):
-                self.logger.critical("ANTI-LOOP ENGAGED: Swarm has repeatedly failed to fix this exact issue. Halting to prevent infinite loop.")
-                return
+        while True:
+            repo_context = self.retriever.get_repo_map()
+            if self.excluded_issues:
+                repo_context += "\nALREADY FAILED THESE ISSUES: " + "\n".join(self.excluded_issues)
             
-            self.logger.warning("Vulnerabilities detected. Entering Multi-Agent Debate Loop...")
+            auditor_task = asyncio.create_task(self.deploy_agent("auditor", repo_context))
+            issues = await auditor_task
             
-            # The Cortex: Multi-Agent Debate (Max 3 rounds)
-            plan = ""
-            for debate_round in range(3):
-                self.logger.info(f"--- Debate Round {debate_round + 1} ---")
-                # Add specific file context based on issue
-                snippets = self.retriever.retrieve_relevant_snippets(["error", "bug", "fail"])
-                plan = await self.deploy_agent("architect", issues + "\nContext:\n" + snippets)
+            if "ISSUE_FOUND" in issues:
+                # --- THE ANTI-LOOP CHECK ---
+                if self._is_looping(issues):
+                    self.logger.critical("ANTI-LOOP ENGAGED: Swarm has repeatedly failed to fix this exact issue. Pivoting to new issue...")
+                    self.excluded_issues.append(issues)
+                    continue
                 
-                adversary_check = await self.deploy_agent("adversary", plan)
-                if "WEAKNESSES_FOUND" not in adversary_check:
-                    self.logger.info("Adversary approved the architecture.")
-                    break
+                self.logger.warning("Vulnerabilities detected. Entering Multi-Agent Debate Loop...")
                 
-                self.logger.warning("Adversary caught an edge case. Re-architecting...")
-                issues = adversary_check # Feed weakness back as the new issue
+                # The Cortex: Multi-Agent Debate (Max 3 rounds)
+                plan = ""
+                for debate_round in range(3):
+                    self.logger.info(f"--- Debate Round {debate_round + 1} ---")
+                    # Add specific file context based on issue
+                    snippets = self.retriever.retrieve_relevant_snippets(["error", "bug", "fail"])
+                    plan = await self.deploy_agent("architect", issues + "\nContext:\n" + snippets)
+                    
+                    adversary_check = await self.deploy_agent("adversary", plan)
+                    if "WEAKNESSES_FOUND" not in adversary_check:
+                        self.logger.info("Adversary approved the architecture.")
+                        break
+                    
+                    self.logger.warning("Adversary caught an edge case. Re-architecting...")
+                    issues = adversary_check # Feed weakness back as the new issue
+                    
+                # 2.5 Quantum Superposition Optimization
+                optimized_plan = await self.deploy_agent("quantum_optimizer", plan)
+                self.logger.info(f"Quantum Swarm selected path: {optimized_plan[:30]}")
                 
-            # 2.5 Quantum Superposition Optimization
-            optimized_plan = await self.deploy_agent("quantum_optimizer", plan)
-            self.logger.info(f"Quantum Swarm selected path: {optimized_plan[:30]}")
-            
-            # 3. Code (Implement fix with GitPython)
-            commit = await self.deploy_agent("coder", optimized_plan)
-            
-            # 4. Verify (Dynamic test execution)
-            report = await self.deploy_agent("tester", commit)
-            
-            # 5. Metabolic Pruning (Self-Optimization)
-            pruning_report = await self.deploy_agent("meta_optimizer", "run")
-            self.logger.info(f"Metabolic Optimization complete: {pruning_report}")
+                # 3. Code (Implement fix with GitPython)
+                commit = await self.deploy_agent("coder", optimized_plan)
+                
+                # 4. Verify (Dynamic test execution)
+                report = await self.deploy_agent("tester", commit)
+                
+                # 5. Metabolic Pruning (Self-Optimization)
+                pruning_report = await self.deploy_agent("meta_optimizer", "run")
+                self.logger.info(f"Metabolic Optimization complete: {pruning_report}")
 
-            if "VERIFIED" in report:
-                self.memory.log_success(issues, report)
-                self.logger.info("Self-Evolution Successful.")
+                if "VERIFIED" in report:
+                    self.memory.log_success(issues, report)
+                    self.logger.info("Self-Evolution Successful.")
+                    break # Break the loop on success
+                else:
+                    self.memory.log_failure(issues, report)
+                    self.logger.error("Evolution cycle failed.")
+                    self.excluded_issues.append(issues)
+                    continue # Continue to next issue
             else:
-                self.memory.log_failure(issues, report)
-                self.logger.error("Evolution cycle failed.")
-        else:
-            self.logger.info("System is optimal. No changes required.")
+                self.logger.info("System is optimal. No changes required.")
+                break # Exit on optimal state
 
 if __name__ == "__main__":
     orchestrator = SwarmOrchestrator()
