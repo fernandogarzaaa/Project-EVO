@@ -27,10 +27,16 @@ class SwarmOrchestrator:
         self.excluded_issues = self.memory.get_excluded_issues()
 
     def _get_python_executable(self):
-        """Resolves the correct python executable path based on platform."""
+        """Resolves the correct python executable path based on platform and availability."""
+        # 1. Try to use current environment's python if .venv doesn't exist
+        venv_path = os.path.join(BASE_DIR, ".venv")
+        if not os.path.exists(venv_path):
+            return sys.executable
+            
+        # 2. Use .venv if it exists
         if os.name == 'nt':
-            return os.path.join(BASE_DIR, ".venv", "Scripts", "python.exe")
-        return os.path.join(BASE_DIR, ".venv", "bin", "python")
+            return os.path.join(venv_path, "Scripts", "python.exe")
+        return os.path.join(venv_path, "bin", "python")
 
     async def deploy_agent(self, agent_role, task):
         self.logger.info(f"Deploying {agent_role} to address: {task[:50]}...")
