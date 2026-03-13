@@ -27,7 +27,7 @@ def apply_fix_and_create_pr(patch_plan):
             cw.set_value("user", "email", "evo-agent@project-evo.ai")
         
         # Ensure safe directory for git in CI
-        subprocess.run(["git", "config", "--global", "--add", "safe.directory", "/home/runner/work/Project-EVO/Project-EVO"], check=False)
+        subprocess.run(["git", "config", "--global", "--add", "safe.directory", "*"], check=False)
 
         # Simulate applying change
         with open("math_engine.py", "w") as f:
