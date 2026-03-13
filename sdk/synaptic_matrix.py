@@ -11,7 +11,7 @@ class SynapticMatrix:
         self.matrix = self._load()
         # Unique ID for this specific organism instance
         self.instance_id = self.matrix.get("instance_id", str(uuid.uuid4()))
-        self.hive_mind_url = os.getenv("HIVEMIND_URL", "https://api.project-evo.ai") # Placeholder for production
+        self.hive_mind_url = os.getenv("HIVEMIND_URL", "https://project-evo-teal.vercel.app") # Production Hive Mind
 
     def _load(self):
         if not os.path.exists(self.path):
