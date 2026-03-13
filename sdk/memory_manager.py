@@ -42,6 +42,7 @@ class EvoMemory:
     def log_failure(self, task, error):
         with open(self.storage_path, "r+") as f:
             data = json.load(f)
+            data.setdefault("excluded_issues", []).append(task)
             data["history"].append({
                 "timestamp": str(datetime.datetime.now()),
                 "task": task,
@@ -53,6 +54,11 @@ class EvoMemory:
         
         # Penalize learning (no telemetry sent on failure)
         self.synapses.reinforce(swarm_name="architect_adversary_quantum", success_delta=-0.1)
+    
+    def get_excluded_issues(self):
+        with open(self.storage_path, "r") as f:
+            data = json.load(f)
+            return data.get("excluded_issues", [])
 
 # Coder Agent implementation with Git
 def apply_change(change_description):

@@ -24,7 +24,7 @@ class SwarmOrchestrator:
         logging.basicConfig(level=logging.INFO)
         self.memory = EvoMemory()
         self.retriever = ContextRetriever()
-        self.excluded_issues = []
+        self.excluded_issues = self.memory.get_excluded_issues()
 
     async def deploy_agent(self, agent_role, task):
         self.logger.info(f"Deploying {agent_role} to address: {task[:50]}...")
