@@ -26,6 +26,12 @@ class SwarmOrchestrator:
         self.retriever = ContextRetriever()
         self.excluded_issues = self.memory.get_excluded_issues()
 
+    def _get_python_executable(self):
+        """Resolves the correct python executable path based on platform."""
+        if os.name == 'nt':
+            return os.path.join(BASE_DIR, ".venv", "Scripts", "python.exe")
+        return os.path.join(BASE_DIR, ".venv", "bin", "python")
+
     async def deploy_agent(self, agent_role, task):
         self.logger.info(f"Deploying {agent_role} to address: {task[:50]}...")
         
@@ -34,7 +40,7 @@ class SwarmOrchestrator:
             return evo_core.invoke_swarm_agent(agent_role, task)
             
         agent_script = os.path.join(BASE_DIR, "swarms", "agents", f"{agent_role}.py")
-        venv_python = os.path.join(BASE_DIR, ".venv", "Scripts", "python.exe")
+        venv_python = self._get_python_executable()
         
         process = await asyncio.create_subprocess_exec(
             venv_python, agent_script, "--task", task,
