@@ -1,5 +1,6 @@
 import argparse
 import logging
+import asyncio
 from sdk.swarm_orchestrator import SwarmOrchestrator
 
 # The Swarm Bot: The orchestrator's public interface, similar to AppForge's entry point
@@ -11,7 +12,7 @@ class SwarmBot:
 
     def start_autonomous_loop(self):
         self.logger.info("Initializing Autonomous Evolution Swarm...")
-        self.orchestrator.run_evolution_cycle({"repo": "."})
+        asyncio.run(self.orchestrator.run_parallel_evolution("."))
         self.logger.info("Evolution loop completed successfully.")
 
 if __name__ == "__main__":
