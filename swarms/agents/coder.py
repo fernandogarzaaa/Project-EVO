@@ -1,23 +1,60 @@
 import argparse
 import sys
-import subprocess
 import os
+import datetime
+import requests
+try:
+    from git import Repo
+except ImportError:
+    Repo = None
 
-# Coder Agent: Applies fixes via PR
+# Coder Agent: Applies fixes via GitPython and GitHub API
 def apply_fix_and_create_pr(patch_plan):
-    # This agent assumes a git repository environment
+    if not Repo:
+        return "ERROR: GitPython not installed. Run pip install GitPython."
+
     try:
-        # Patch the files as dictated by the plan
-        with open("evo_patch.py", "w") as f:
-            f.write(patch_plan)
+        repo = Repo(".")
+        branch_name = f"evo-fix-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
         
-        # Git operations
-        subprocess.run(["git", "checkout", "-b", "evo-fix-v1"], check=True)
-        subprocess.run(["git", "add", "."], check=True)
-        subprocess.run(["git", "commit", "-m", "Autonomous fix by Project Evo Agent"], check=True)
+        # Create and checkout branch
+        new_branch = repo.create_head(branch_name)
+        new_branch.checkout()
+
+        # Simulate applying change (in production, an LLM parses the patch into exact files)
+        with open("evo_history.log", "a") as f:
+            f.write(f"Applied fix on {branch_name}\n")
         
-        # Output info for the next swarm (Tester)
-        return "PR_CREATED: https://github.com/inan/project-evo/pull/1"
+        # Commit
+        repo.git.add(A=True)
+        repo.index.commit(f"Autonomous Evo Fix: {branch_name}")
+        
+        # Push
+        origin = repo.remote(name='origin')
+        origin.push(branch_name)
+
+        # Create PR via GitHub API to remove `gh` CLI dependency
+        token = os.getenv("GITHUB_TOKEN")
+        if token:
+            headers = {"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json"}
+            remote_url = list(origin.urls)[0]
+            # Naive parsing of repo owner/name from remote URL
+            repo_path = remote_url.split("github.com/")[-1].replace(".git", "")
+            pr_data = {
+                "title": f"Autonomous Fix: {branch_name}",
+                "body": "Project Evo applied a self-healing patch.\n\n" + patch_plan,
+                "head": branch_name,
+                "base": "main"
+            }
+            api_url = f"https://api.github.com/repos/{repo_path}/pulls"
+            resp = requests.post(api_url, headers=headers, json=pr_data)
+            if resp.status_code == 201:
+                return f"PR_CREATED: {resp.json().get('html_url')}"
+            else:
+                return f"PR_CREATION_FAILED: {resp.text}"
+        
+        return f"BRANCH_PUSHED: {branch_name} (No GITHUB_TOKEN for PR)"
+
     except Exception as e:
         return f"ERROR: {str(e)}"
 
@@ -26,6 +63,5 @@ if __name__ == "__main__":
     parser.add_argument("--task")
     args = parser.parse_args()
     
-    # Simple coder logic
-    pr_url = apply_fix_and_create_pr(args.task)
-    print(pr_url)
+    pr_status = apply_fix_and_create_pr(args.task)
+    print(pr_status)

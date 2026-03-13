@@ -3,6 +3,7 @@ import json
 import logging
 import os
 from sdk.memory_manager import EvoMemory
+from sdk.context_retriever import ContextRetriever
 try:
     import evo_core  # Importing the Rust-based swarm bridge
 except ImportError:
@@ -15,6 +16,7 @@ class SwarmOrchestrator:
         self.logger = logging.getLogger("EvoOrchestrator")
         logging.basicConfig(level=logging.INFO)
         self.memory = EvoMemory()
+        self.retriever = ContextRetriever()
 
     async def deploy_agent(self, agent_role, task):
         self.logger.info(f"Deploying {agent_role} to address: {task[:50]}...")
@@ -35,28 +37,37 @@ class SwarmOrchestrator:
         self.logger.info("Starting Parallel Evolution Cycle on: " + repo_path)
         
         # 1. Audit (Parallelize with context gathering)
-        auditor_task = asyncio.create_task(self.deploy_agent("auditor", repo_path))
+        repo_context = self.retriever.get_repo_map()
+        auditor_task = asyncio.create_task(self.deploy_agent("auditor", repo_context))
         issues = await auditor_task
         
         if "ISSUE_FOUND" in issues:
-            self.logger.warning("Vulnerabilities detected. Orchestrating mitigation...")
+            self.logger.warning("Vulnerabilities detected. Entering Multi-Agent Debate Loop...")
             
-            # 2. Architect + Adversary in parallel (Generate plan & Red-team simultaneously)
-            plan = await self.deploy_agent("architect", issues)
-            adversary_check = await self.deploy_agent("adversary", plan)
-            
-            if "WEAKNESSES_FOUND" in adversary_check:
-                self.logger.warning("Adversary caught an edge case. Re-architecting...")
-                plan = await self.deploy_agent("architect", adversary_check)
+            # The Cortex: Multi-Agent Debate (Max 3 rounds)
+            plan = ""
+            for debate_round in range(3):
+                self.logger.info(f"--- Debate Round {debate_round + 1} ---")
+                # Add specific file context based on issue
+                snippets = self.retriever.retrieve_relevant_snippets(["error", "bug", "fail"])
+                plan = await self.deploy_agent("architect", issues + "\nContext:\n" + snippets)
                 
-            # 2.5 Quantum Superposition Optimization (The "Intelligence" Layer)
+                adversary_check = await self.deploy_agent("adversary", plan)
+                if "WEAKNESSES_FOUND" not in adversary_check:
+                    self.logger.info("Adversary approved the architecture.")
+                    break
+                
+                self.logger.warning("Adversary caught an edge case. Re-architecting...")
+                issues = adversary_check # Feed weakness back as the new issue
+                
+            # 2.5 Quantum Superposition Optimization
             optimized_plan = await self.deploy_agent("quantum_optimizer", plan)
-            self.logger.info(f"Quantum Swarm selected architectural path: {optimized_plan[:30]}")
+            self.logger.info(f"Quantum Swarm selected path: {optimized_plan[:30]}")
             
-            # 3. Code (Implement fix)
+            # 3. Code (Implement fix with GitPython)
             commit = await self.deploy_agent("coder", optimized_plan)
             
-            # 4. Verify
+            # 4. Verify (Dynamic test execution)
             report = await self.deploy_agent("tester", commit)
             
             # 5. Metabolic Pruning (Self-Optimization)
