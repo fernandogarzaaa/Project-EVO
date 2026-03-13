@@ -1,6 +1,11 @@
 import argparse
 import json
 import random
+import sys
+import os
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(BASE_DIR)
 
 # Quantum Optimizer: Uses superposition of strategies to select the most robust fix
 def optimize_path(proposed_plan):

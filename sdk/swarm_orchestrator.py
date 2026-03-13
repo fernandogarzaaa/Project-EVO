@@ -2,6 +2,11 @@ import asyncio
 import json
 import logging
 import os
+import sys
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(BASE_DIR)
+
 from sdk.memory_manager import EvoMemory
 from sdk.context_retriever import ContextRetriever
 try:
@@ -10,7 +15,9 @@ except ImportError:
     evo_core = None # Fallback to standard Python subprocess
 
 class SwarmOrchestrator:
-    def __init__(self, registry_path="swarms/registry.json"):
+    def __init__(self, registry_path=None):
+        if registry_path is None:
+            registry_path = os.path.join(BASE_DIR, "swarms", "registry.json")
         with open(registry_path, "r") as f:
             self.registry = json.load(f)
         self.logger = logging.getLogger("EvoOrchestrator")
@@ -25,12 +32,17 @@ class SwarmOrchestrator:
         if evo_core:
             return evo_core.invoke_swarm_agent(agent_role, task)
             
+        agent_script = os.path.join(BASE_DIR, "swarms", "agents", f"{agent_role}.py")
         process = await asyncio.create_subprocess_exec(
-            "python", f"swarms/agents/{agent_role}.py", "--task", task,
+            sys.executable, agent_script, "--task", task,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
+            cwd=os.getcwd()  # Execute in the target repo's working directory
         )
         stdout, stderr = await process.communicate()
+        # Log stderr if it crashed
+        if process.returncode != 0:
+            self.logger.error(f"{agent_role} failed: {stderr.decode().strip()}")
         return stdout.decode().strip()
 
     async def run_parallel_evolution(self, repo_path):

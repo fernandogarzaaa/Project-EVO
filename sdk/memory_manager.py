@@ -3,14 +3,21 @@ import subprocess
 import json
 import datetime
 from pathlib import Path
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+import sys
+sys.path.append(BASE_DIR)
 from sdk.synaptic_matrix import SynapticMatrix
 
 class EvoMemory:
-    def __init__(self, storage_path="meta-swarms/memory.json"):
+    def __init__(self, storage_path=None):
+        if storage_path is None:
+            storage_path = os.path.join(BASE_DIR, "meta-swarms", "memory.json")
         self.storage_path = storage_path
         self.synapses = SynapticMatrix()
-        if not os.path.exists(storage_path):
-            with open(storage_path, "w") as f:
+        os.makedirs(os.path.dirname(self.storage_path), exist_ok=True)
+        if not os.path.exists(self.storage_path):
+            with open(self.storage_path, "w") as f:
                 json.dump({"history": [], "knowledge_graph": {}}, f)
 
     def log_success(self, task, solution):

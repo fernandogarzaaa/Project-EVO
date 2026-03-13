@@ -1,5 +1,11 @@
 import argparse
 import json
+import os
+import sys
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(BASE_DIR)
+
 from sdk.synaptic_matrix import SynapticMatrix
 
 # Meta-Optimizer Agent: Prunes inefficient pathways to maintain 'metabolic' efficiency

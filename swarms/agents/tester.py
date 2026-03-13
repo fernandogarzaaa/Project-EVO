@@ -15,7 +15,7 @@ def run_tests():
         result = subprocess.run(["cargo", "test"], capture_output=True, text=True)
     elif os.path.exists("pytest.ini") or os.path.exists("tests"):
         print("Python environment detected. Running pytest...")
-        result = subprocess.run(["pytest"], capture_output=True, text=True)
+        result = subprocess.run([sys.executable, "-m", "pytest", "tests"], capture_output=True, text=True)
     else:
         print("No standard test suite detected. Defaulting to Python unittest discover...")
         result = subprocess.run(["python", "-m", "unittest", "discover", "-s", "."], capture_output=True, text=True)

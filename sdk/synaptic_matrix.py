@@ -5,9 +5,14 @@ import requests
 import uuid
 import threading
 
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 class SynapticMatrix:
-    def __init__(self, path="meta-swarms/synapses.json"):
+    def __init__(self, path=None):
+        if path is None:
+            path = os.path.join(BASE_DIR, "meta-swarms", "synapses.json")
         self.path = path
+        os.makedirs(os.path.dirname(self.path), exist_ok=True)
         self.matrix = self._load()
         # Unique ID for this specific organism instance
         self.instance_id = self.matrix.get("instance_id", str(uuid.uuid4()))

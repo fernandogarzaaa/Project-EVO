@@ -1,6 +1,10 @@
 import argparse
 import sys
 import os
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(BASE_DIR)
+
 from sdk.llm_client import query_agent
 
 # Auditor Agent: Performs deep analysis

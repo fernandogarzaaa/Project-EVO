@@ -3,21 +3,24 @@ import os
 import json
 import sys
 
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 def setup():
     print("--- Project Evo Setup Wizard ---")
     api_key = input("Enter your OpenAI/Anthropic API Key: ")
-    with open(".env", "w") as f:
+    with open(os.path.join(BASE_DIR, ".env"), "w") as f:
         f.write(f"OPENAI_API_KEY={api_key}\n")
     print("Configuration saved! You are ready to evolve.")
 
 def start():
+    import subprocess
     print("Initializing Evo Swarm...")
-    os.system("python swarm_bot.py --run")
+    subprocess.run([sys.executable, os.path.join(BASE_DIR, "swarm_bot.py"), "--run"])
 
 def status():
     # Simple plain-english report from the memory manager
     try:
-        with open("meta-swarms/memory.json", "r") as f:
+        with open(os.path.join(BASE_DIR, "meta-swarms/memory.json"), "r") as f:
             mem = json.load(f)
             history = mem.get("history", [])
             last = history[-1] if history else {"status": "No evolution cycles yet."}

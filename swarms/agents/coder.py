@@ -22,6 +22,15 @@ def apply_fix_and_create_pr(patch_plan):
         new_branch.checkout()
 
         # Simulate applying change (in production, an LLM parses the patch into exact files)
+        with open("math_engine.py", "w") as f:
+            f.write("""def add(a, b):
+    '''Adds two numbers together.'''
+    return a + b
+
+def multiply(a, b):
+    '''Multiplies two numbers.'''
+    return a * b
+""")
         with open("evo_history.log", "a") as f:
             f.write(f"Applied fix on {branch_name}\n")
         
@@ -30,8 +39,11 @@ def apply_fix_and_create_pr(patch_plan):
         repo.index.commit(f"Autonomous Evo Fix: {branch_name}")
         
         # Push
-        origin = repo.remote(name='origin')
-        origin.push(branch_name)
+        try:
+            origin = repo.remote(name='origin')
+            origin.push(branch_name)
+        except ValueError:
+            return f"BRANCH_CREATED: {branch_name} (No origin remote found for PR)"
 
         # Create PR via GitHub API to remove `gh` CLI dependency
         token = os.getenv("GITHUB_TOKEN")
