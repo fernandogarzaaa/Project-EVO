@@ -17,8 +17,8 @@ def run_tests():
         print("Python environment detected. Running pytest...")
         result = subprocess.run(["pytest"], capture_output=True, text=True)
     else:
-        print("No standard test suite detected. Defaulting to syntax check...")
-        result = subprocess.run(["python", "-m", "py_compile", "swarm_bot.py"], capture_output=True, text=True)
+        print("No standard test suite detected. Defaulting to Python unittest discover...")
+        result = subprocess.run(["python", "-m", "unittest", "discover", "-s", "."], capture_output=True, text=True)
 
     if result.returncode == 0:
         return "VERIFIED: Test suite passed perfectly."
