@@ -3,6 +3,7 @@ import sys
 import os
 import datetime
 import requests
+import subprocess
 try:
     from git import Repo
 except ImportError:
