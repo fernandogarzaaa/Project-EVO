@@ -45,6 +45,19 @@ class SwarmOrchestrator:
             self.logger.error(f"{agent_role} failed: {stderr.decode().strip()}")
         return stdout.decode().strip()
 
+    def _is_looping(self, current_issue):
+        """Checks the memory log to see if we recently tried (and failed) to fix this exact issue."""
+        with open(self.memory.storage_path, "r") as f:
+            history = json.load(f).get("history", [])
+            
+        # Check the last 3 actions. If they are failures for the same issue, abort.
+        recent_failures = [h for h in history[-3:] if h.get("status") == "failure"]
+        for failure in recent_failures:
+            # Simple heuristic: If the issue string is heavily similar to a recent failure
+            if current_issue[:100] in failure.get("task", ""):
+                return True
+        return False
+
     async def run_parallel_evolution(self, repo_path):
         self.logger.info("Starting Parallel Evolution Cycle on: " + repo_path)
         
@@ -54,6 +67,11 @@ class SwarmOrchestrator:
         issues = await auditor_task
         
         if "ISSUE_FOUND" in issues:
+            # --- THE ANTI-LOOP CHECK ---
+            if self._is_looping(issues):
+                self.logger.critical("ANTI-LOOP ENGAGED: Swarm has repeatedly failed to fix this exact issue. Halting to prevent infinite loop.")
+                return
+            
             self.logger.warning("Vulnerabilities detected. Entering Multi-Agent Debate Loop...")
             
             # The Cortex: Multi-Agent Debate (Max 3 rounds)
@@ -98,3 +116,4 @@ class SwarmOrchestrator:
 if __name__ == "__main__":
     orchestrator = SwarmOrchestrator()
     asyncio.run(orchestrator.run_parallel_evolution("."))
+
