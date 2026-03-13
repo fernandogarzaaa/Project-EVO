@@ -39,6 +39,10 @@ def aggregate_synapse(payload: TelemetryPayload):
     
     save_master_matrix(matrix)
 
+@app.get("/")
+async def root():
+    return {"status": "Hive Mind is Online", "version": "1.0", "message": "Project Evo Telemetry Server is active."}
+
 @app.post("/telemetry/sync")
 async def sync_telemetry(payload: TelemetryPayload, background_tasks: BackgroundTasks):
     """
