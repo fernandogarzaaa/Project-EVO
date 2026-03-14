@@ -27,13 +27,16 @@ sys.path.append(BASE_DIR)
 
 from sdk.memory_manager import EvoMemory
 from sdk.context_retriever import ContextRetriever
+from sdk.quantum_planner import SuperpositionEngine
+from sdk.swarm_mesh import NodeManager, AgentActor, SwarmMessage
 try:
     import evo_core  # Importing the Rust-based swarm bridge
 except ImportError:
     evo_core = None # Fallback to standard Python subprocess
 
 class SwarmOrchestrator:
-    def __init__(self, registry_path=None):
+    def __init__(self, registry_path=None, use_swarm_mesh=False):
+        self.use_swarm_mesh = use_swarm_mesh
         if registry_path is None:
             registry_path = os.path.join(BASE_DIR, "swarms", "registry.json")
         with open(registry_path, "r") as f:
@@ -79,6 +82,15 @@ class SwarmOrchestrator:
         self._checkpoint_state(agent_role, task)
         self.logger.info(f"Deploying {agent_role} to address: {task[:50]}...")
         
+        if self.use_swarm_mesh:
+            import uuid
+            if not hasattr(self, 'node_manager'):
+                self.node_manager = NodeManager()
+                asyncio.create_task(self.node_manager.start())
+            actor = AgentActor(f"{agent_role}_{uuid.uuid4().hex[:8]}", self.node_manager)
+            await actor.send_to_brain("deploy", {"role": agent_role, "task": task})
+            return f"DISPATCHED_TO_MESH:{agent_role}"
+
         # Use Rust bridge if available, else fallback to subprocess
         if evo_core:
             return evo_core.invoke_swarm_agent(agent_role, task)
@@ -132,6 +144,15 @@ class SwarmOrchestrator:
                         continue
                     
                     self.logger.warning("Vulnerabilities detected. Entering Multi-Agent Debate Loop...")
+                    
+                    # --- PRE-PLANNING: Quantum-Inspired MCTS ---
+                    self.logger.info("Initializing Superposition Planning Engine...")
+                    planner = SuperpositionEngine(branching_factor=3, max_depth=2)
+                    got = planner.generate_graph_of_thoughts(initial_state=issues)
+                    optimal_path = planner.collapse_wave_function(got)
+                    if optimal_path:
+                        self.logger.info(f"Collapsed Wave Function to optimal path: {optimal_path['path_id']}")
+                        issues = optimal_path["state"]  # Update state with the optimal branch
                     
                     # The Cortex: Multi-Agent Debate (Max 3 rounds)
                     plan = ""

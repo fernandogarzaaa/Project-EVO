@@ -2,19 +2,26 @@ import os
 import subprocess
 import json
 import datetime
+import numpy as np
 from pathlib import Path
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 import sys
 sys.path.append(BASE_DIR)
 from sdk.synaptic_matrix import SynapticMatrix
+from sdk.htm_core import TensorMemory
 
 class EvoMemory:
-    def __init__(self, storage_path=None):
+    def __init__(self, storage_path=None, use_htm=False):
         if storage_path is None:
             storage_path = os.path.join(BASE_DIR, "meta-swarms", "memory.json")
         self.storage_path = storage_path
         self.synapses = SynapticMatrix()
+        
+        # Initialize HTM optional component
+        self.use_htm = use_htm
+        self.htm = TensorMemory() if use_htm else None
+        
         os.makedirs(os.path.dirname(self.storage_path), exist_ok=True)
         if not os.path.exists(self.storage_path):
             with open(self.storage_path, "w") as f:
@@ -59,6 +66,16 @@ class EvoMemory:
         with open(self.storage_path, "r") as f:
             data = json.load(f)
             return data.get("excluded_issues", [])
+
+    def store_latent_context(self, latent_vector, metadata=None):
+        if self.use_htm and self.htm:
+            return self.htm.write_latent(latent_vector, metadata)
+        return None
+
+    def retrieve_latent_context(self, query_vector, top_k=5):
+        if self.use_htm and self.htm:
+            return self.htm.read_latent(query_vector, top_k)
+        return []
 
 class Librarian:
     """Agent that periodically reads raw daily logs and distills them into a single MEMORY.md summary."""
