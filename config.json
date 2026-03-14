@@ -1,0 +1,10 @@
+# Project Evo Environment Configuration
+# Copy this to config.json and fill in your credentials
+
+{
+  "api_provider": "openai",
+  "api_key": "YOUR_API_KEY_HERE",
+  "model": "gpt-4-turbo",
+  "log_level": "INFO",
+  "workspace": "./"
+}
