@@ -60,6 +60,45 @@ class EvoMemory:
             data = json.load(f)
             return data.get("excluded_issues", [])
 
+class Librarian:
+    """Agent that periodically reads raw daily logs and distills them into a single MEMORY.md summary."""
+    def __init__(self, memory_dir=None, output_file=None):
+        if memory_dir is None:
+            memory_dir = os.path.join(BASE_DIR, "memory")
+        if output_file is None:
+            output_file = os.path.join(BASE_DIR, "MEMORY.md")
+        self.memory_dir = Path(memory_dir)
+        self.output_file = Path(output_file)
+
+    def synthesize(self):
+        """Read all YYYY-MM-DD.md files in memory_dir and create a distilled MEMORY.md."""
+        if not self.memory_dir.exists():
+            return "No memory directory found."
+        
+        compiled_logs = []
+        for file in sorted(self.memory_dir.glob("????-??-??.md")):
+            try:
+                with open(file, "r", encoding="utf-8") as f:
+                    content = f.read().strip()
+                    if content:
+                        compiled_logs.append(f"### {file.name}\n{content}")
+            except Exception as e:
+                continue
+                
+        if not compiled_logs:
+            return "No logs to synthesize."
+            
+        # Reflection-based distillation: in a full implementation, this would call an LLM.
+        # Here we compile the raw logs into a structured summary document.
+        distilled_content = "# System Memory (Distilled)\n\n"
+        distilled_content += "This file contains the synthesized reflections from daily logs.\n\n"
+        distilled_content += "\n\n---\n\n".join(compiled_logs)
+        
+        with open(self.output_file, "w", encoding="utf-8") as f:
+            f.write(distilled_content)
+            
+        return f"Synthesized {len(compiled_logs)} daily logs into {self.output_file.name}."
+
 # Coder Agent implementation with Git
 def apply_change(change_description):
     # This agent assumes a git repository environment
