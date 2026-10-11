@@ -1,4 +1,5 @@
 import argparse
+import getpass
 import os
 import json
 import sys
@@ -7,7 +8,7 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 def setup():
     print("--- Project Evo Setup Wizard ---")
-    api_key = input("Enter your OpenAI/Anthropic API Key: ")
+    api_key = getpass.getpass("Enter your OpenAI/Anthropic API Key (hidden): ")
     with open(os.path.join(BASE_DIR, ".env"), "w") as f:
         f.write(f"OPENAI_API_KEY={api_key}\n")
     print("Configuration saved! You are ready to evolve.")

@@ -21,23 +21,36 @@ Project Evo acts as an organism with a "brain" (LLM-agnostic) and a "swarm" of i
 You don't need to edit code. Use the **Evo CLI** to control your swarm.
 
 ### 1. Initial Setup
-Download the `evo.exe` binary, or run it via Python:
+Download the `evo.exe` binary, or run it via Python (Linux/macOS: `./setup.sh` first, then `python3`):
 ```bash
+# Windows
 python D:\project-evo\cli\evo_cli.py setup
+
+# Linux / macOS
+./setup.sh
+python3 cli/evo_cli.py setup
 ```
 The wizard will securely ask for your API credentials (OpenAI/Anthropic) to power the swarm's intelligence.
 
 ### 2. Launching Evolution
 Start your autonomous swarm bot in the background:
 ```bash
+# Windows
 python D:\project-evo\cli\evo_cli.py start
+
+# Linux / macOS
+python3 cli/evo_cli.py start
 ```
 The bot will begin auditing your repository, identifying risks, and generating PRs for fixes—all autonomously.
 
 ### 3. Monitoring Status
 Check the bot's health and evolution progress anytime:
 ```bash
+# Windows
 python D:\project-evo\cli\evo_cli.py status
+
+# Linux / macOS
+python3 cli/evo_cli.py status
 ```
 *This provides a human-readable summary of how many bugs were healed, synaptic pathways optimized, and evolutions completed.*
 
