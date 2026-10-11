@@ -9,3 +9,4 @@ memory/
 # Protect the Brain
 meta-swarms/synapses.json
 .env
+.checkpoints/
