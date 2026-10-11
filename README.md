@@ -27,8 +27,8 @@ Download the `evo.exe` binary, or run it via Python (Linux/macOS: `./setup.sh` f
 python D:\project-evo\cli\evo_cli.py setup
 
 # Linux / macOS
-./setup.sh
-python3 cli/evo_cli.py setup
+./setup.sh                      # creates .venv and installs requirements
+.venv/bin/python cli/evo_cli.py setup
 ```
 The wizard will securely ask for your API credentials (OpenAI/Anthropic) to power the swarm's intelligence.
 
@@ -39,7 +39,7 @@ Start your autonomous swarm bot in the background:
 python D:\project-evo\cli\evo_cli.py start
 
 # Linux / macOS
-python3 cli/evo_cli.py start
+.venv/bin/python cli/evo_cli.py start
 ```
 The bot will begin auditing your repository, identifying risks, and generating PRs for fixes—all autonomously.
 
@@ -50,7 +50,7 @@ Check the bot's health and evolution progress anytime:
 python D:\project-evo\cli\evo_cli.py status
 
 # Linux / macOS
-python3 cli/evo_cli.py status
+.venv/bin/python cli/evo_cli.py status
 ```
 *This provides a human-readable summary of how many bugs were healed, synaptic pathways optimized, and evolutions completed.*
 
